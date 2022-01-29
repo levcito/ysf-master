@@ -1,0 +1,8 @@
+﻿  main.cpp
+  Memory.cpp
+  System.cpp
+  logprintf_buf.cpp
+  Generando código...
+  subhook.c
+     Creando biblioteca bin\win32\Debug\YSF.lib y objeto bin\win32\Debug\YSF.exp
+  YSF.vcxproj -> C:\Users\Lev\Desktop\ysf-master\bin\win32\Debug\YSF.dll

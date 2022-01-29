@@ -1,0 +1,65 @@
+# TODO: fix debug compilation on Linux
+version: "{branch}-{build}"
+
+image:
+  - Visual Studio 2019
+  - Ubuntu
+
+branches:
+  except:
+    - github-master
+
+clone_depth: 1
+
+configuration:
+  - Debug
+  - Release
+
+build:
+  parallel: true
+  verbosity: normal
+
+for:
+  - matrix:
+      only:
+        - image: Ubuntu
+
+    install:
+      - sh: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get -qq update
+          sudo apt-get -qq -y install g++-multilib gcc-multilib
+          echo "g++ version: $(g++ --version | cut -d$'\n' -f1)"
+
+    build_script:
+      - chmod +x ./appveyor-build.sh && ./appveyor-build.sh
+
+    after_build:
+      - sh: |
+          mv YSF.static YSF_static.so || true
+          mv YSF_d.static YSF_static_d.so || true
+          mv *.so sampsvr_files/plugins
+          tar czf YSF.tar.gz -C sampsvr_files filterscripts pawno plugins
+
+    artifacts:
+      - path: YSF.tar.gz
+        name: YSF Binaries (Linux)
+
+  - matrix:
+      only:
+        - image: Visual Studio 2019
+
+    build_script:
+      - msbuild %APPVEYOR_PROJECT_NAME%.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+    after_build:
+      - cmd: |
+          mv bin/*/*/YSF.dll sampsvr_files/plugins || true
+          mv bin/*/*/YSF.pdb sampsvr_files/plugins || true
+          cd sampsvr_files
+          7z a YSF.zip filterscripts pawno plugins
+          mv YSF.zip ..
+
+    artifacts:
+      - path: YSF.zip
+        name: YSF Binaries (Windows)
